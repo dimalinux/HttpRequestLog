@@ -1,0 +1,62 @@
+<div class="container">
+    <div>
+
+        <span data-ng-switch="path">
+            <span data-ng-switch-when="undefined">
+                <h3>{{recentRequests.length}} most recent requests below:</h3>
+            </span>
+            <span data-ng-switch-default>
+                <span data-ng-switch="recentRequests.length">
+                    <p data-ng-switch-when="0">No recent requests for path={{path}} found</p>
+                    <p data-ng-switch-default>{{recentRequests.length}} most recent request(s) for path={{path}} below:</p>
+                </span>
+            </span>
+        </span>
+
+        <table class="table" style="width: auto;">
+            <tr data-ng-repeat-start="request in recentRequests">
+                <th>Time:</th>
+                <td>{{ request.serverStamp | date:'yyyy-MM-dd HH:mm:ss Z' }}</td>
+            </tr>
+            <tr>
+                <th>Method:</th>
+                <td>{{ request.requestMethod }}</td>
+            </tr>
+            <tr>
+                <th>Path:</th>
+                <td>{{ request.path }}</td>
+            </tr>
+            <tr>
+                <th>Remote Host:</th>
+                <td>{{ request.remoteHost }} / {{ request.remoteIp }}</td>
+            </tr>
+            <tr>
+                <th>Request Headers</th>
+                <td>
+                    <table class="table" style="width: auto;">
+                        <tr data-ng-repeat="header in request.requestHeaders">
+                            <th>{{ header.name }}</th>
+                            <td>{{ header.value }}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr data-ng-hide="request.requestParams.length === 0">
+                <th>Request Parameters</th>
+                <td>
+                    <table class="table" style="width: auto;">
+                        <tr data-ng-repeat="param in request.requestParams">
+                            <th>{{ param.name }}</th>
+                            <td>{{ param.value }}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr data-ng-repeat-end data-ng-clock class="ng-cloak">
+                <th></th>
+                <td></td>
+            </tr>
+        </table>
+
+    </div>
+</div>
