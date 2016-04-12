@@ -69,18 +69,24 @@ public class RequestLogController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("logged paths must match regex: " + VALID_LOGGED_PATH_REGEX);
         }
 
-        String remoteIp = request.getRemoteAddr();
-
         RequestEntity requestEntity = new RequestEntity(new Date(), request.getMethod(), path);
-        requestEntity.setRemoteIp(remoteIp);
-        requestEntity.setRemoteHost(ipToHostName(remoteIp));
-        requestEntity.setRemotePort(request.getRemotePort());
+        String remoteIp = request.getRemoteAddr();
+        boolean isLocalConnection = remoteIp.equals("127.0.0.1") || remoteIp.equals("0:0:0:0:0:0:0:1");
 
         Enumeration allHeaderNames = request.getHeaderNames();
         while (allHeaderNames.hasMoreElements()) {
             String name = (String) allHeaderNames.nextElement();
-            requestEntity.addRequestHeader(name, request.getHeader(name));
+            // X-Real-IP is a header added by our nginx reverse proxy, so we don't log it if our connection was proxied
+            if (!name.equals("X-Real-IP") || !isLocalConnection) {
+                requestEntity.addRequestHeader(name, request.getHeader(name));
+            } else {
+                remoteIp = request.getHeader(name);
+            }
         }
+
+        requestEntity.setRemoteIp(remoteIp);
+        requestEntity.setRemoteHost(ipToHostName(remoteIp));
+        requestEntity.setRemotePort(request.getRemotePort());
 
         for (Map.Entry<String, String[]> param : request.getParameterMap().entrySet()) {
             String key = param.getKey();
