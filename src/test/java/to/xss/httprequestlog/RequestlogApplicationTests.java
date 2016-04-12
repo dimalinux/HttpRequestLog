@@ -1,10 +1,12 @@
-package to.noc;
+package to.xss.httprequestlog;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -19,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = RequestLogApplication.class)
+@TestPropertySource(locations="classpath:test.properties")
 @WebAppConfiguration
 public class RequestlogApplicationTests {
 
@@ -38,13 +41,13 @@ public class RequestlogApplicationTests {
 
     @Test
     public void testHome() throws Exception {
-        this.mockMvc.perform(post("/")).andExpect(status().isOk());
+        this.mockMvc.perform(get("/")).andExpect(status().isOk());
     }
 
     @Test
     public void testLoggedRquest() throws Exception {
         this.mockMvc.perform(
-                get("/lalala")
+                post("/lalala").contentType(MediaType.APPLICATION_FORM_URLENCODED)
                         .param("testKey", "testValue")
                         .param("testMultiValKey", "testVal1", "testVal2"))
                 .andExpect(status().isOk()
