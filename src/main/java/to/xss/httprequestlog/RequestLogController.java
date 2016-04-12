@@ -10,23 +10,29 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import to.noc.requestlog.domain.RequestEntity;
-import to.noc.requestlog.domain.RequestRepository;
+import org.springframework.web.servlet.HandlerMapping;
+import to.xss.httprequestlog.domain.RequestEntity;
+import to.xss.httprequestlog.domain.RequestRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
-import static to.noc.requestlog.util.IpUtil.ipToHostName;
+import static to.xss.httprequestlog.util.IpUtil.ipToHostName;
 
 @Controller
 public class RequestLogController {
 
     private static final Logger log = LoggerFactory.getLogger(RequestLogController.class);
+
+    private static final String VALID_LOGGED_PATH_REGEX = "^/(?!_)[\\p{IsAlphabetic}\\p{IsDigit}\\p{Punct} ]{2,128}$";
+    private static final Pattern VALID_LOGGED_PATH = Pattern.compile(VALID_LOGGED_PATH_REGEX);
 
     @Autowired
     RequestRepository requestRepository;
@@ -52,14 +58,16 @@ public class RequestLogController {
                 requestRepository.findByPath(path, pageable).getContent();
     }
 
-
-    @RequestMapping(value = {"/{path:(?!_view)\\w{1,128}}"}, method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = "/{partialPath:(?!_view).+}/**", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseStatus(value = HttpStatus.OK)
-    public void loggedRequest(
-            HttpServletRequest request,
-            @PathVariable(value = "path") final String path
-    ) {
+    public ResponseEntity<String> loggedRequest(HttpServletRequest request) {
+
+        String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
         log.info("request logging controller called path={}", path);
+
+        if (!VALID_LOGGED_PATH.matcher(path).matches()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("logged paths must match regex: " + VALID_LOGGED_PATH_REGEX);
+        }
 
         String remoteIp = request.getRemoteAddr();
 
@@ -83,6 +91,7 @@ public class RequestLogController {
         }
 
         requestRepository.save(requestEntity);
+
+        return ResponseEntity.status(HttpStatus.OK).body("logged");
     }
 }
-
