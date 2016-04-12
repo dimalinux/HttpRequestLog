@@ -44,7 +44,7 @@ public class RequestLogController {
         return "_view/index.html";
     }
 
-    @RequestMapping(value = "/", method = RequestMethod.POST, produces = "application/json")
+    @RequestMapping(value = "/", method = RequestMethod.POST, produces = "application/json", consumes = {"application/json"})
     @ResponseBody
     public List<RequestEntity> recentRequests(@RequestBody Map<String, String> jsonParams) {
         String path = jsonParams.getOrDefault("path", "");
