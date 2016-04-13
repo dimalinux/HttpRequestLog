@@ -41,10 +41,11 @@ angular.module("requestLoggerApp", ['ngRoute', 'ui.bootstrap'])
         var postData = {};
 
         if ($routeParams.path) {
-            searchPathService.path = $routeParams.path;
-            postData.path = $routeParams.path;
-            $scope.path = $routeParams.path;
-            $log.debug('recentRequestsController called, path=' + $routeParams.path);
+            var path = $routeParams.path.replace(/^\/*/,"/"); // Make sure there is exactly one leading slash
+            searchPathService.path = path;
+            postData.path = path;
+            $scope.path = path;
+            $log.debug('recentRequestsController called, path=' + path);
         } else {
             $log.debug('recentRequestsController called (any path)');
         }
