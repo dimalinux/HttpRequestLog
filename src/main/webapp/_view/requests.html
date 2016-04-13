@@ -1,17 +1,17 @@
 <div class="container">
     <div>
 
-        <span data-ng-switch="path">
+        <div data-ng-switch="path">
             <span data-ng-switch-when="undefined">
-                <h3>{{recentRequests.length}} most recent requests below:</h3>
+                <h4>{{recentRequests.length}} most recent requests below:</h4>
             </span>
             <span data-ng-switch-default>
                 <span data-ng-switch="recentRequests.length">
-                    <p data-ng-switch-when="0">No recent requests for path={{path}} found</p>
-                    <p data-ng-switch-default>{{recentRequests.length}} most recent request(s) for path={{path}} below:</p>
+                    <h4 data-ng-switch-when="0">No recent requests for path={{path}} found</h4>
+                    <h4 data-ng-switch-default>{{recentRequests.length}} most recent request(s) for path={{path}} below:</h4>
                 </span>
             </span>
-        </span>
+        </div>
 
         <table class="table" style="width: auto;">
             <tr data-ng-repeat-start="request in recentRequests">
