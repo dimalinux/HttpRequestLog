@@ -84,6 +84,7 @@ public class RequestLogController {
 
     @RequestMapping(value = "/{partialPath:(?!_view)(?!robots\\.txt).+}/**", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseStatus(value = HttpStatus.OK)
+    @CrossOrigin // Allow cross origin request from anywhere
     public ResponseEntity<String> loggedRequest(HttpServletRequest request) {
 
         String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
