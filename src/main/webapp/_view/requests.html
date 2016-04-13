@@ -28,7 +28,7 @@
             </tr>
             <tr>
                 <th>Remote Host:</th>
-                <td>{{ request.remoteHost }} / {{ request.remoteIp }}</td>
+                <td><span data-ng-show="request.remoteHost">{{ request.remoteHost }} /</span> {{ request.remoteIp }}</td>
             </tr>
             <tr>
                 <th>Request Headers</th>
