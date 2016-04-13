@@ -6,10 +6,12 @@ package to.xss.httprequestlog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -37,14 +39,19 @@ public class RequestLogController {
     @Autowired
     RequestRepository requestRepository;
 
+    @Value("${production.host:xss.to}")
+    private String productionHost;
 
-    @RequestMapping(value = {"/"}, method = RequestMethod.GET, produces = "text/html")
+
+    @RequestMapping(value = {"/"}, method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
     public String showLandingPage() {
         log.info("homepage request made");
         return "_view/index.html";
     }
 
-    @RequestMapping(value = "/", method = RequestMethod.POST, produces = "application/json", consumes = {"application/json"})
+    @RequestMapping(value = "/", method = RequestMethod.POST,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public List<RequestEntity> recentRequests(@RequestBody Map<String, String> jsonParams) {
         String path = jsonParams.getOrDefault("path", "");
@@ -58,7 +65,24 @@ public class RequestLogController {
                 requestRepository.findByPath(path, pageable).getContent();
     }
 
-    @RequestMapping(value = "/{partialPath:(?!_view).+}/**", method = {RequestMethod.GET, RequestMethod.POST})
+
+    /*
+     * Creates a robots.txt that denies all paths if our server is not the production server.
+     */
+    @RequestMapping(value = "/robots.txt", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> showRobotsDotText(@RequestHeader(value = "Host", defaultValue = "") String requestHost) {
+        requestHost = requestHost.replaceFirst(":.*", "").toLowerCase(); // strip port numbers
+        boolean allowRobotCrawl = requestHost.equals(productionHost);
+
+        log.debug("RobotsController called, reqHost={} canCrawl={}", requestHost, allowRobotCrawl);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                "User-agent: *\n" +
+                        "Disallow: " + (allowRobotCrawl ? "_view/\n" : "/\n")
+        );
+    }
+
+
+    @RequestMapping(value = "/{partialPath:(?!_view)(?!robots\\.txt).+}/**", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseStatus(value = HttpStatus.OK)
     public ResponseEntity<String> loggedRequest(HttpServletRequest request) {
 
