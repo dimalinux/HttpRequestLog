@@ -29,10 +29,15 @@ angular.module("requestLoggerApp", ['ngRoute', 'ui.bootstrap'])
 
     .controller('navigationController', ['$scope', '$log', '$location', 'searchPathService', function ($scope, $log, $location, searchPathFactory) {
         $log.debug('navigationController called');
-        $scope.searchPath = searchPathFactory;
+        $scope.search = searchPathFactory;
 
-        $scope.go = function (hash) {
-            $location.path(hash);
+        $scope.limitPathResults = function () {
+            var path = searchPathFactory.path;
+            if (path) {
+                $location.path("/path/" + path.replace(/^\/*/, ''));
+            } else {
+                $location.path("/");
+            }
         }
     }])
 
