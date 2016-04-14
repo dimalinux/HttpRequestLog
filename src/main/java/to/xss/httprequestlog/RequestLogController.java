@@ -48,7 +48,13 @@ public class RequestLogController {
     public String showLandingPage(HttpServletResponse response) {
         log.info("homepage request made");
         response.addHeader("X-Frame-Options", "deny");
-        return "index.html";
+        response.addHeader("Content-Security-Policy",
+                "default-src 'self';" +
+                "script-src 'self' https://ajax.googleapis.com/ajax/libs/  https://angular-ui.github.io/bootstrap/;" +
+                "style-src 'self' 'unsafe-inline' https://netdna.bootstrapcdn.com/bootstrap/;" +
+                "font-src https://netdna.bootstrapcdn.com/bootstrap/;"
+        );
+        return "_view/index.html";
     }
 
     @RequestMapping(value = "/", method = RequestMethod.POST,
