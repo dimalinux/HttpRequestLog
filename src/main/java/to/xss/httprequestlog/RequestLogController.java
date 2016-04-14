@@ -20,6 +20,7 @@ import to.xss.httprequestlog.domain.RequestEntity;
 import to.xss.httprequestlog.domain.RequestRepository;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
@@ -44,9 +45,10 @@ public class RequestLogController {
 
 
     @RequestMapping(value = {"/"}, method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
-    public String showLandingPage() {
+    public String showLandingPage(HttpServletResponse response) {
         log.info("homepage request made");
-        return "_view/index.html";
+        response.addHeader("X-Frame-Options", "deny");
+        return "index.html";
     }
 
     @RequestMapping(value = "/", method = RequestMethod.POST,
