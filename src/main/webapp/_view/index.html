@@ -6,18 +6,17 @@
     <meta charset="UTF-8">
     <title>HTTP Request Logger</title>
     <!-- Generate integrity hashes here: https://www.srihash.org/ -->
-    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
-          integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="/_webjars/bootstrap/3.3.6/css/bootstrap.min.css">
 </head>
 
 <body>
 
-<nav class="navbar navbar-default" role="navigation" ng-controller="navigationController">
+<nav class="navbar navbar-default" role="navigation" data-ng-controller="NavigationController">
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
 
-        <button type="button" class="navbar-toggle" ng-init="navCollapsed = true"
-                ng-click="navCollapsed = !navCollapsed">
+        <button type="button" class="navbar-toggle" data-ng-init="navCollapsed = true"
+                data-ng-click="navCollapsed = !navCollapsed">
             <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
@@ -27,10 +26,10 @@
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
-    <div class="collapse navbar-collapse" ng-class="!navCollapsed && 'in'" ng-click="navCollapsed = true">
-        <form class="navbar-form navbar-left" role="search" ng-submit="limitPathResults()">
+    <div class="collapse navbar-collapse" data-ng-class="!navCollapsed && 'in'" data-ng-click="navCollapsed = true">
+        <form class="navbar-form navbar-left" role="search" data-ng-submit="limitPathResults()">
             <div class="form-group">
-                <input type="text" class="form-control" placeholder="Path Search" ng-model="search.path">
+                <input type="text" class="form-control" placeholder="Path Search" data-ng-model="search.path">
             </div>
             <button type="submit" class="btn btn-default">Submit</button>
         </form>
@@ -42,17 +41,12 @@
 
 <div data-ng-view></div>
 
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular.js"
-        integrity="sha384-F5IrGRbLKZq5OBu2iaIPe+OuQlXnMMQrjftXrOd7wL5PJNVhQ5RJvSqJ/BgHZFu0"
-        crossorigin="anonymous"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular-route.js"
-        integrity="sha384-/NKMeoPrKrSoQaolrKzV8Qt11hRGZiNcbkyQyGHuENI8DvT1FcTsdVTBdvcMbExx"
-        crossorigin="anonymous"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular-animate.js"
-        integrity="sha384-ZfhKu1fgrC9QqMdrgn6thXDRy2sfMNgrvSattMHqGqHy0eLvT6rwwVwcwDzxaZBV"
-        crossorigin="anonymous"></script>
-<script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-1.2.5.js"
-        integrity="sha256-gT9Ci4tCoQ7jPO9AOsW73MFkWeEtFInGiYQAcAYaSs4=" crossorigin="anonymous"></script>
+<script src="/_webjars/angularjs/1.5.0/angular.min.js"></script>
+<script src="/_webjars/angularjs/1.5.0/angular-route.js"></script>
+<script src="/_webjars/angularjs/1.5.0//angular-animate.js"></script>
+<script src="/_webjars/angular-ui-bootstrap/1.2.5/ui-bootstrap-tpls.min.js"></script>
+<script src="/_webjars/angular-ui-router/0.2.18/angular-ui-router.min.js"></script>
+
 <script src="/_view/app.js"></script>
 </body>
 </html>
