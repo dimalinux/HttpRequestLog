@@ -24,7 +24,7 @@
             </tr>
             <tr>
                 <th>Path:</th>
-                <td>{{ request.path }}</td>
+                <td><a ui-sref="RequestsForPath({path: request.path.substring(1)})">{{ request.path }}</a></td>
             </tr>
             <tr>
                 <th>Remote Host:</th>

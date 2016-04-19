@@ -18,7 +18,7 @@
         $urlRouterProvider.otherwise("/");
 
         $stateProvider
-            .state('RecentRequests', {
+            .state('Home', {
                 url: '/',
                 templateUrl: '/_view/requests.html',
                 controller: 'RequestsController as vm'
