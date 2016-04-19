@@ -1,17 +1,27 @@
 /**
  * Copyright (C) 2016, Dmitry Holodov. All rights reserved.
  */
+(function () {
 
-angular.module("requestLoggerApp", ['ngRoute', 'ui.bootstrap'])
+    'use strict';
 
-    .config(function ($routeProvider) {
+    angular.module("requestLoggerApp", ['ngRoute', 'ui.router', 'ui.bootstrap'])
+        .config(RequestLoggerRoutes)
+        .service('SearchPathService', SearchPathService)
+        .controller('NavigationController', NavigationController)
+        .controller('RequestsController', RequestsController);
+
+
+    RequestLoggerRoutes.$scope = ['$routeProvider'];
+
+    function RequestLoggerRoutes($routeProvider) {
         $routeProvider
             .when('/', {
-                controller: 'recentRequestsController',
+                controller: 'RequestsController',
                 templateUrl: '/_view/requests.html'
             })
             .when('/path/:path', {
-                controller: 'recentRequestsController',
+                controller: 'RequestsController',
                 templateUrl: '/_view/requests.html'
             })
 
@@ -21,38 +31,44 @@ angular.module("requestLoggerApp", ['ngRoute', 'ui.bootstrap'])
             .otherwise({
                 redirectTo: '/'
             });
-    })
+    }
 
-    .service('searchPathService', function () {
+    function SearchPathService() {
         this.path = '';
-    })
+    }
 
-    .controller('navigationController', ['$scope', '$log', '$location', 'searchPathService', function ($scope, $log, $location, searchPathFactory) {
+
+    NavigationController.$scope = ['$scope', '$log', '$location', 'SearchPathService'];
+
+    function NavigationController($scope, $log, $location, SearchPathService) {
         $log.debug('navigationController called');
-        $scope.search = searchPathFactory;
+        $scope.search = SearchPathService;
 
         $scope.limitPathResults = function () {
-            var path = searchPathFactory.path;
+            var path = SearchPathService.path;
             if (path) {
                 $location.path("/path/" + path.replace(/^\/*/, ''));
             } else {
                 $location.path("/");
             }
         }
-    }])
+    }
 
-    .controller('recentRequestsController', ['$scope', '$http', '$routeParams', '$log', 'searchPathService', function ($scope, $http, $routeParams, $log, searchPathService) {
+
+    RequestsController.$scope = ['$scope', '$http', '$routeParams', '$log', 'SearchPathService'];
+
+    function RequestsController($scope, $http, $routeParams, $log, SearchPathService) {
 
         var postData = {};
 
         if ($routeParams.path) {
-            var path = $routeParams.path.replace(/^\/*/,"/"); // Make sure there is exactly one leading slash
-            searchPathService.path = path;
+            var path = $routeParams.path.replace(/^\/*/, "/"); // Make sure there is exactly one leading slash
+            SearchPathService.path = path;
             postData.path = path;
             $scope.path = path;
-            $log.debug('recentRequestsController called, path=' + path);
+            $log.debug('RequestsController called, path=' + path);
         } else {
-            $log.debug('recentRequestsController called (any path)');
+            $log.debug('RequestsController called (any path)');
         }
 
         $http.post('/', postData).then(
@@ -62,4 +78,6 @@ angular.module("requestLoggerApp", ['ngRoute', 'ui.bootstrap'])
             function errorCallback(response) {
                 $log.error('unable to load recent requests');
             });
-    }]);
+    };
+
+})();
