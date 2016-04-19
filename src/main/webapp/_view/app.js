@@ -5,47 +5,53 @@
 
     'use strict';
 
-    angular.module("requestLoggerApp", ['ngRoute', 'ui.router', 'ui.bootstrap'])
-        .config(RequestLoggerRoutes)
+    angular.module("requestLoggerApp", ['ui.bootstrap', 'ui.router'])
+        .config(ConfigRoutes)
         .service('SearchPathService', SearchPathService)
         .controller('NavigationController', NavigationController)
         .controller('RequestsController', RequestsController);
 
 
-    RequestLoggerRoutes.$scope = ['$routeProvider'];
+    ConfigRoutes.$inject = ['$stateProvider', '$urlRouterProvider'];
 
-    function RequestLoggerRoutes($routeProvider) {
-        $routeProvider
-            .when('/', {
-                controller: 'RequestsController',
-                templateUrl: '/_view/requests.html'
-            })
-            .when('/path/:path', {
-                controller: 'RequestsController',
-                templateUrl: '/_view/requests.html'
-            })
+    function ConfigRoutes($stateProvider, $urlRouterProvider) {
+        $urlRouterProvider.otherwise("/");
 
-            .when('/about', {
+        $stateProvider
+            .state('RecentRequests', {
+                url: '/',
+                templateUrl: '/_view/requests.html',
+                controller: 'RequestsController as vm'
+            })
+            .state('RequestsForPath', {
+                url: '/path/{path:.*}',
+                templateUrl: '/_view/requests.html',
+                controller: 'RequestsController as vm'
+            })
+            .state('About', {
+                url: '/about',
                 templateUrl: '/_view/about.html'
-            })
-            .otherwise({
-                redirectTo: '/'
             });
     }
+
 
     function SearchPathService() {
         this.path = '';
     }
 
 
-    NavigationController.$scope = ['$scope', '$log', '$location', 'SearchPathService'];
+    NavigationController.$inject = ['$log', '$location', 'SearchPathService'];
 
-    function NavigationController($scope, $log, $location, SearchPathService) {
+    function NavigationController($log, $location, SearchPathService) {
+
+        var vm = this;
+
         $log.debug('navigationController called');
-        $scope.search = SearchPathService;
+        vm.search = SearchPathService;
 
-        $scope.limitPathResults = function () {
-            var path = SearchPathService.path;
+        vm.limitPathResults = function () {
+            $log.debug('search for path initiated');
+            var path = vm.search.path;
             if (path) {
                 $location.path("/path/" + path.replace(/^\/*/, ''));
             } else {
@@ -55,17 +61,18 @@
     }
 
 
-    RequestsController.$scope = ['$scope', '$http', '$routeParams', '$log', 'SearchPathService'];
+    RequestsController.$inject = ['$http', '$stateParams', '$log', 'SearchPathService'];
 
-    function RequestsController($scope, $http, $routeParams, $log, SearchPathService) {
+    function RequestsController($http, $stateParams, $log, SearchPathService) {
 
+        var vm = this;
         var postData = {};
 
-        if ($routeParams.path) {
-            var path = $routeParams.path.replace(/^\/*/, "/"); // Make sure there is exactly one leading slash
+        if ($stateParams.path) {
+            var path = $stateParams.path.replace(/^\/*/, "/"); // Make sure there is exactly one leading slash
             SearchPathService.path = path;
             postData.path = path;
-            $scope.path = path;
+            vm.path = path;
             $log.debug('RequestsController called, path=' + path);
         } else {
             $log.debug('RequestsController called (any path)');
@@ -73,11 +80,11 @@
 
         $http.post('/', postData).then(
             function successCallback(response) {
-                $scope.recentRequests = response.data;
+                vm.requests = response.data;
             },
             function errorCallback(response) {
                 $log.error('unable to load recent requests');
             });
-    };
+    }
 
 })();

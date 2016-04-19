@@ -11,7 +11,7 @@
 
 <body>
 
-<nav class="navbar navbar-default" role="navigation" data-ng-controller="NavigationController">
+<nav class="navbar navbar-default" role="navigation" data-ng-controller="NavigationController as vm">
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
 
@@ -27,9 +27,9 @@
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" data-ng-class="!navCollapsed && 'in'" data-ng-click="navCollapsed = true">
-        <form class="navbar-form navbar-left" role="search" data-ng-submit="limitPathResults()">
+        <form class="navbar-form navbar-left" role="search" data-ng-submit="vm.limitPathResults()">
             <div class="form-group">
-                <input type="text" class="form-control" placeholder="Path Search" data-ng-model="search.path">
+                <input type="text" class="form-control" placeholder="Path Search" data-ng-model="vm.search.path">
             </div>
             <button type="submit" class="btn btn-default">Submit</button>
         </form>
@@ -39,11 +39,12 @@
     </div><!-- /.navbar-collapse -->
 </nav>
 
-<div data-ng-view></div>
+<div class="container">
+    <div ui-view></div>
+</div>
 
 <script src="/_webjars/angularjs/1.5.0/angular.min.js"></script>
-<script src="/_webjars/angularjs/1.5.0/angular-route.js"></script>
-<script src="/_webjars/angularjs/1.5.0//angular-animate.js"></script>
+<script src="/_webjars/angularjs/1.5.0/angular-animate.min.js"></script>
 <script src="/_webjars/angular-ui-bootstrap/1.2.5/ui-bootstrap-tpls.min.js"></script>
 <script src="/_webjars/angular-ui-router/0.2.18/angular-ui-router.min.js"></script>
 

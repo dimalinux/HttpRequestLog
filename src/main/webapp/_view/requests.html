@@ -3,18 +3,18 @@
 
         <div data-ng-switch="path">
             <span data-ng-switch-when="undefined">
-                <h4>{{recentRequests.length}} most recent requests below:</h4>
+                <h4>{{vm.requests.length}} most recent requests below:</h4>
             </span>
             <span data-ng-switch-default>
                 <span data-ng-switch="recentRequests.length">
                     <h4 data-ng-switch-when="0">No recent requests for path={{path}} found</h4>
-                    <h4 data-ng-switch-default>{{recentRequests.length}} most recent request(s) for path={{path}} below:</h4>
+                    <h4 data-ng-switch-default>{{vm.requests.length}} most recent request(s) for path={{path}} below:</h4>
                 </span>
             </span>
         </div>
 
         <table class="table" style="width: auto;">
-            <tr data-ng-repeat-start="request in recentRequests">
+            <tr data-ng-repeat-start="request in vm.requests">
                 <th>Time:</th>
                 <td>{{ request.serverStamp | date:'yyyy-MM-dd HH:mm:ss Z' }}</td>
             </tr>
