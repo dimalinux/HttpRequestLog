@@ -40,9 +40,9 @@
     }
 
 
-    NavigationController.$inject = ['$log', '$location', 'SearchPathService'];
+    NavigationController.$inject = ['$log', '$state', 'SearchPathService'];
 
-    function NavigationController($log, $location, SearchPathService) {
+    function NavigationController($log, $state, SearchPathService) {
 
         var vm = this;
 
@@ -53,9 +53,9 @@
             $log.debug('search for path initiated');
             var path = vm.search.path;
             if (path) {
-                $location.path("/path/" + path.replace(/^\/*/, ''));
+                $state.go("RequestsForPath", { path: path.replace(/^\/*/, '') });
             } else {
-                $location.path("/");
+                $state.go("Home");
             }
         }
     }
