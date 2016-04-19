@@ -89,7 +89,7 @@ public class RequestLogController {
 
 
     @RequestMapping(
-            value = "/{partialPath:(?!_view)(?!_webjars)(?!_favicon\\.ico)(?!robots\\.txt).+}/**",
+            value = "/{partialPath:(?!_view)(?!_webjars)(?!favicon\\.ico)(?!robots\\.txt)(?!sitemap.xml).+}/**",
             method = {RequestMethod.GET, RequestMethod.POST}
     )
     @ResponseStatus(value = HttpStatus.OK)
