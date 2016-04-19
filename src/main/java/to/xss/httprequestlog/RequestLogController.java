@@ -48,11 +48,9 @@ public class RequestLogController {
     public String showLandingPage(HttpServletResponse response) {
         log.info("homepage request made");
         response.addHeader("X-Frame-Options", "deny");
-        response.addHeader("Content-Security-Policy",
-                "default-src 'self';" +
-                "script-src 'self' https://ajax.googleapis.com/ajax/libs/  https://angular-ui.github.io/bootstrap/;" +
-                "style-src 'self' 'unsafe-inline' https://netdna.bootstrapcdn.com/bootstrap/;" +
-                "font-src https://netdna.bootstrapcdn.com/bootstrap/;"
+        response.addHeader(
+                "Content-Security-Policy",
+                "default-src 'self'; style-src 'self' 'unsafe-inline';"
         );
         return "_view/index.html";
     }
@@ -90,7 +88,10 @@ public class RequestLogController {
     }
 
 
-    @RequestMapping(value = "/{partialPath:(?!_view)(?!robots\\.txt).+}/**", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(
+            value = "/{partialPath:(?!_view)(?!_webjars)(?!_favicon\\.ico)(?!robots\\.txt).+}/**",
+            method = {RequestMethod.GET, RequestMethod.POST}
+    )
     @ResponseStatus(value = HttpStatus.OK)
     @CrossOrigin // Allow cross origin request from anywhere
     public ResponseEntity<String> loggedRequest(HttpServletRequest request) {
