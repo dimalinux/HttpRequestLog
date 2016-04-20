@@ -105,17 +105,37 @@ public class RequestLogController {
 
         RequestEntity requestEntity = new RequestEntity(new Date(), request.getMethod(), path);
         String remoteIp = request.getRemoteAddr();
-        boolean isLocalConnection = remoteIp.equals("127.0.0.1") || remoteIp.equals("0:0:0:0:0:0:0:1");
+        boolean isLocalOrProxiedConnection = remoteIp.equals("127.0.0.1") || remoteIp.equals("0:0:0:0:0:0:0:1");
+        String connectionHeaderVal = null;
 
         Enumeration allHeaderNames = request.getHeaderNames();
         while (allHeaderNames.hasMoreElements()) {
             String name = (String) allHeaderNames.nextElement();
-            // X-Real-IP is a header added by our nginx reverse proxy, so we don't log it if our connection was proxied
-            if (!name.equals("X-Real-IP") || !isLocalConnection) {
-                requestEntity.addRequestHeader(name, request.getHeader(name));
-            } else {
-                remoteIp = request.getHeader(name);
+            // X-Real-IP is a header added by our nginx reverse proxy.  If it's set, it overrides
+            // the servlet client ip address.  X-Real-Connection is also added by our nginx config.
+            // It contains the original Connection header value when the reverse proxy changes
+            // the original value to "close".
+            if (!isLocalOrProxiedConnection) {
+                switch (name) {
+                    case "X-Real-IP":
+                        remoteIp = request.getHeader(name);
+                        continue;
+                    case "X-Real-Connection":
+                        connectionHeaderVal = request.getHeader(name);
+                        continue;
+                    case "Connection":
+                        // don't reset the connection value if it was already fixated by X-Real-Connection
+                        if (connectionHeaderVal == null) {
+                            connectionHeaderVal = request.getHeader(name);
+                        }
+                        continue;
+                }
             }
+            requestEntity.addRequestHeader(name, request.getHeader(name));
+        }
+
+        if (connectionHeaderVal != null) {
+            requestEntity.addRequestHeader("Connection", connectionHeaderVal);
         }
 
         requestEntity.setRemoteIp(remoteIp);
@@ -134,4 +154,5 @@ public class RequestLogController {
 
         return ResponseEntity.status(HttpStatus.OK).body("logged");
     }
+
 }
