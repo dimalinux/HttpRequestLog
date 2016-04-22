@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +22,8 @@ import to.xss.httprequestlog.domain.RequestRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static to.xss.httprequestlog.util.IpUtil.ipToHostName;
@@ -36,6 +35,13 @@ public class RequestLogController {
 
     private static final String VALID_LOGGED_PATH_REGEX = "^/(?!_)[\\p{IsAlphabetic}\\p{IsDigit}\\p{Punct} ]{2,128}$";
     private static final Pattern VALID_LOGGED_PATH = Pattern.compile(VALID_LOGGED_PATH_REGEX);
+
+    private static final byte[] ONE_PIXEL_PNG = Base64.getDecoder().decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII="
+    );
+
+    private static final CacheControl DO_NOT_CACHE = CacheControl.noCache().noStore().mustRevalidate().sMaxAge(0, TimeUnit.SECONDS);
+
 
     @Autowired
     RequestRepository requestRepository;
@@ -97,7 +103,7 @@ public class RequestLogController {
     )
     @ResponseStatus(value = HttpStatus.OK)
     @CrossOrigin // Allow cross origin request from anywhere
-    public ResponseEntity<String> loggedRequest(HttpServletRequest request) {
+    public ResponseEntity loggedRequest(HttpServletRequest request) {
 
         String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
         log.info("request logging controller called path={}", path);
@@ -154,7 +160,14 @@ public class RequestLogController {
 
         requestRepository.save(requestEntity);
 
-        return ResponseEntity.status(HttpStatus.OK).body("logged");
+
+        ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.OK).cacheControl(DO_NOT_CACHE);
+
+        if (path.toLowerCase().endsWith(".png")) {
+            return response.contentType(MediaType.IMAGE_PNG).body(ONE_PIXEL_PNG);
+        } else {
+            return response.contentType(MediaType.TEXT_PLAIN).body("logged");
+        }
     }
 
 }
