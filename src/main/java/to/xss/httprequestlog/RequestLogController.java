@@ -43,6 +43,9 @@ public class RequestLogController {
     @Value("${production.host:xss.to}")
     private String productionHost;
 
+    @Value("${behindReverseProxy:false}")
+    private boolean behindReverseProxy;
+
 
     @RequestMapping(value = {"/"}, method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
     public String showLandingPage(HttpServletResponse response) {
@@ -105,7 +108,6 @@ public class RequestLogController {
 
         RequestEntity requestEntity = new RequestEntity(new Date(), request.getMethod(), path);
         String remoteIp = request.getRemoteAddr();
-        boolean isLocalOrProxiedConnection = remoteIp.equals("127.0.0.1") || remoteIp.equals("0:0:0:0:0:0:0:1");
         String connectionHeaderVal = null;
 
         Enumeration allHeaderNames = request.getHeaderNames();
@@ -115,7 +117,7 @@ public class RequestLogController {
             // the servlet client ip address.  X-Real-Connection is also added by our nginx config.
             // It contains the original Connection header value when the reverse proxy changes
             // the original value to "close".
-            if (!isLocalOrProxiedConnection) {
+            if (behindReverseProxy) {
                 switch (name) {
                     case "X-Real-IP":
                         remoteIp = request.getHeader(name);
