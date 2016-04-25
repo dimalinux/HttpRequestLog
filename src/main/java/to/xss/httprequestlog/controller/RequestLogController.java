@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2016, Dmitry Holodov. All rights reserved.
  */
-package to.xss.httprequestlog;
+package to.xss.httprequestlog.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
