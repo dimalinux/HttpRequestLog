@@ -33,6 +33,9 @@ public class RequestLogController {
 
     private static final Logger log = LoggerFactory.getLogger(RequestLogController.class);
 
+
+    private static final String LOGGED_REQUEST_PATH = "/{partialPath:(?!_view)(?!_webjars)(?!favicon\\.ico)(?!robots\\.txt)(?!sitemap.xml).+}/**";
+
     private static final String VALID_LOGGED_PATH_REGEX = "^/(?!_)[\\p{IsAlphabetic}\\p{IsDigit}\\p{Punct} ]{2,128}$";
     private static final Pattern VALID_LOGGED_PATH = Pattern.compile(VALID_LOGGED_PATH_REGEX);
 
@@ -97,19 +100,71 @@ public class RequestLogController {
     }
 
 
+    private static class BadLoggedPathException extends RuntimeException {}
+
+    @ExceptionHandler(BadLoggedPathException.class)
+    public ResponseEntity handleBadLoggedPathException()
+    {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            "Logged paths must match regex: " + VALID_LOGGED_PATH_REGEX
+        );
+    }
+
+
+    @RequestMapping(value = LOGGED_REQUEST_PATH, method = {RequestMethod.GET, RequestMethod.POST})
+    @ResponseStatus(value = HttpStatus.OK)
+    @CrossOrigin // Allow cross origin request from anywhere
+    public ResponseEntity loggedRequestUrlEncodedOrIgnoredBody(HttpServletRequest request) {
+
+        RequestEntity requestEntity = buildBaseRequestEntity(request);
+        String path = requestEntity.getPath();
+
+        requestRepository.save(requestEntity);
+
+        ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.OK).cacheControl(DO_NOT_CACHE);
+
+        if (path.toLowerCase().endsWith(".png")) {
+            return response.contentType(MediaType.IMAGE_PNG).body(ONE_PIXEL_PNG);
+        } else {
+            return response.contentType(MediaType.TEXT_PLAIN).body("logged");
+        }
+    }
+
+
     @RequestMapping(
-            value = "/{partialPath:(?!_view)(?!_webjars)(?!favicon\\.ico)(?!robots\\.txt)(?!sitemap.xml).+}/**",
-            method = {RequestMethod.GET, RequestMethod.POST}
+            value = LOGGED_REQUEST_PATH,
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
     )
     @ResponseStatus(value = HttpStatus.OK)
     @CrossOrigin // Allow cross origin request from anywhere
-    public ResponseEntity loggedRequest(HttpServletRequest request) {
+    public ResponseEntity loggedRequestJsonBody(HttpServletRequest request, @RequestBody Map<String, Object> jsonBody) {
+
+        RequestEntity requestEntity = buildBaseRequestEntity(request);
+
+        for (Map.Entry<String, Object> jsonParam : jsonBody.entrySet()) {
+            String key = jsonParam.getKey();
+            String value = jsonParam.getValue().toString();
+            requestEntity.addRequestParam(key, value);
+        }
+
+        requestRepository.save(requestEntity);
+
+        ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.OK).cacheControl(DO_NOT_CACHE);
+
+        return response.contentType(MediaType.APPLICATION_JSON_UTF8).body("{\"logged\": true}");
+    }
+
+
+    private RequestEntity buildBaseRequestEntity(HttpServletRequest request) {
 
         String path = request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE).toString();
+
         log.info("request logging controller called path={}", path);
 
         if (!VALID_LOGGED_PATH.matcher(path).matches()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("logged paths must match regex: " + VALID_LOGGED_PATH_REGEX);
+            throw new BadLoggedPathException();
         }
 
         RequestEntity requestEntity = new RequestEntity(new Date(), request.getMethod(), path);
@@ -158,16 +213,7 @@ public class RequestLogController {
             }
         }
 
-        requestRepository.save(requestEntity);
-
-
-        ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.OK).cacheControl(DO_NOT_CACHE);
-
-        if (path.toLowerCase().endsWith(".png")) {
-            return response.contentType(MediaType.IMAGE_PNG).body(ONE_PIXEL_PNG);
-        } else {
-            return response.contentType(MediaType.TEXT_PLAIN).body("logged");
-        }
+        return requestEntity;
     }
 
 }
