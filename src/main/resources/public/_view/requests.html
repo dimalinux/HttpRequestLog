@@ -13,50 +13,51 @@
             </span>
         </div>
 
-        <table class="table" style="width: auto;">
-            <tr data-ng-repeat-start="request in vm.requests">
-                <th>Time:</th>
-                <td>{{ request.serverStamp | date:'yyyy-MM-dd HH:mm:ss Z' }}</td>
-            </tr>
-            <tr>
-                <th>Method:</th>
-                <td>{{ request.requestMethod }}</td>
-            </tr>
-            <tr>
-                <th>Path:</th>
-                <td><a ui-sref="RequestsForPath({path: request.path.substring(1)})">{{ request.path }}</a></td>
-            </tr>
-            <tr>
-                <th>Remote Host:</th>
-                <td><span data-ng-show="request.remoteHost">{{ request.remoteHost }} /</span> {{ request.remoteIp }}</td>
-            </tr>
-            <tr>
-                <th>Request Headers</th>
-                <td>
-                    <table class="table" style="width: auto;">
-                        <tr data-ng-repeat="header in request.requestHeaders">
-                            <th>{{ header.name }}</th>
-                            <td>{{ header.value }}</td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            <tr data-ng-hide="request.requestParams.length === 0">
-                <th>Request Parameters</th>
-                <td>
-                    <table class="table" style="width: auto;">
-                        <tr data-ng-repeat="param in request.requestParams">
-                            <th>{{ param.name }}</th>
-                            <td>{{ param.value }}</td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            <tr data-ng-repeat-end data-ng-clock class="ng-cloak">
-                <th></th>
-                <td></td>
-            </tr>
-        </table>
+        <div data-ng-repeat="request in vm.requests">
 
+            <div class="requestDivider"></div>
+
+            <table class="table">
+                <tr>
+                    <th>Time:</th>
+                    <td>{{ request.serverStamp | date:'yyyy-MM-dd HH:mm:ss Z' }}</td>
+                </tr>
+                <tr>
+                    <th>Method:</th>
+                    <td>{{ request.requestMethod }}</td>
+                </tr>
+                <tr>
+                    <th>Path:</th>
+                    <td><a ui-sref="RequestsForPath({path: request.path.substring(1)})">{{ request.path }}</a></td>
+                </tr>
+                <tr>
+                    <th>Remote Host:</th>
+                    <td><span data-ng-show="request.remoteHost">{{ request.remoteHost }} /</span> {{ request.remoteIp }}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Request Headers</th>
+                    <td>
+                        <table class="table" style="width: auto;">
+                            <tr data-ng-repeat="header in request.requestHeaders">
+                                <th>{{ header.name }}</th>
+                                <td>{{ header.value }}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr data-ng-hide="request.requestParams.length === 0">
+                    <th>Request Parameters</th>
+                    <td>
+                        <table class="table" style="width: auto;">
+                            <tr data-ng-repeat="param in request.requestParams">
+                                <th>{{ param.name }}</th>
+                                <td>{{ param.value }}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
     </div>
 </div>
