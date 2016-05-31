@@ -1,9 +1,82 @@
 <div class="container">
-    <h4>Site still under construction</h4>
-    <div>Things to put on this page:</div>
+
+    <h3>How to access this site:</h3>
+
+    <h4>View URLS (access <b>not</b> be logged publicly):</h4>
     <ul>
-        <li>What this site can do</li>
-        <li>Why this site was created</li>
-        <li><a href="https://github.com/dimalinux/HttpRequestLog">Link to Github source</a></li>
+        <li>https://xss.to</li>
+        <li>
+            https://xss.to/#path/<i>{YOUR_PATH}</i>, https://xss.to/<i>#{...}</i>
+            <ul>
+                <li>
+                    Remember that web browsers do not send the URL hash tag ('#') and the text after it to the server.
+                    This URL is still to the site's homepage (not logged).  The client, in Javascript, interprets
+                    the location hash to filter your results or load other site information like this page.
+                </li>
+            </ul>
+        </li>
+        <li>http://hdryforlegnugar5.onion
+            <ul>
+                <li>
+                    If you have the <a href="https://www.torproject.org/">TOR browser</a> installed, you can
+                    anonymously browse the server over the Tor network at the above onion URL.
+                </li>
+                <li>
+                    If you forget the onion domain name, there is a "tor" TXT record in the site's DNS:
+                    <div><i>nslookup -q=txt xss.to</i></div>
+                </li>
+            </ul>
+        </li>
+        <li>
+            https://xss.to<i>_{...}</i>
+            <ul>
+                <li>
+                    The website internally uses URLs that start with underscores.  Access to these URLs as well
+                    as favicon.ico are not logged.
+                </li>
+            </ul>
+        </li>
     </ul>
+
+
+    <h4>Logged URLs:</h4>
+    <ul>
+        <li>
+            https://xss.to/{YOUR_PATH}
+            <ul>
+                <li>
+                    Path must be at least 2 characters long and cannot start with an underscore.
+                </li>
+            </ul>
+        </li>
+        <li>
+            https://xss.to/{YOUR_PATH}.png
+            <ul>
+                <li>
+                    Logged just like URLs that don't end in ".png", but the result returned to the client
+                    browser is a valid 1x1 PNG image.
+                </li>
+            </ul>
+        </li>
+    </ul>
+
+
+    <h4>Source Code:</h4>
+    <ul>
+        <li>
+            The source for this site is on Github:
+            <a href="https://github.com/dimalinux/HttpRequestLog">HttpRequestLog</a>
+        </li>
+    </ul>
+
+
+
+    <h4>Blog:</h4>
+    <ul>
+        <li>
+            Detailed example use cases for the xss.to website will be documented in my blog:
+            <div><a href="https://xssto.blogspot.com/">https://xssto.blogspot.com/</a></div>
+        </li>
+    </ul>
+
 </div>
