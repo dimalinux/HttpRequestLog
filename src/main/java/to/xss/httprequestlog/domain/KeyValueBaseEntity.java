@@ -19,7 +19,7 @@ abstract class KeyValueBaseEntity implements Serializable {
     private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "request_id")
+    @JoinColumn(name = "request_id", nullable = false)
     protected RequestEntity request;
 
     @Size(max = 128)
