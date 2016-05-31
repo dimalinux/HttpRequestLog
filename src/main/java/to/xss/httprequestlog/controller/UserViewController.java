@@ -30,9 +30,6 @@ public class UserViewController {
     @Autowired
     RequestRepository requestRepository;
 
-    @Value("${production.host:xss.to}")
-    private String productionHost;
-
     @RequestMapping(value = {"/"}, method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
     public String showLandingPage(HttpServletResponse response) {
         log.info("homepage request made");
@@ -58,22 +55,6 @@ public class UserViewController {
         return path.isEmpty() ?
                 requestRepository.findAll(pageable).getContent() :
                 requestRepository.findByPath(path, pageable).getContent();
-    }
-
-
-    /*
-     * Creates a robots.txt that denies all paths if our server is not the production server.
-     */
-    @RequestMapping(value = "/robots.txt", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> showRobotsDotText(@RequestHeader(value = "Host", defaultValue = "") String requestHost) {
-        requestHost = requestHost.replaceFirst(":.*", "").toLowerCase(); // strip port numbers
-        boolean allowRobotCrawl = requestHost.equals(productionHost);
-
-        log.debug("RobotsController called, reqHost={} canCrawl={}", requestHost, allowRobotCrawl);
-        return ResponseEntity.status(HttpStatus.OK).body(
-                "User-agent: *\n" +
-                        "Disallow: " + (allowRobotCrawl ? "_view/\n" : "/\n")
-        );
     }
 
 }

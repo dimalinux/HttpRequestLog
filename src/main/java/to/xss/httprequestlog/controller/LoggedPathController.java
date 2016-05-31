@@ -18,6 +18,7 @@ import to.xss.httprequestlog.domain.RequestEntity;
 import to.xss.httprequestlog.domain.RequestRepository;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -25,11 +26,11 @@ import java.util.regex.Pattern;
 import static to.xss.httprequestlog.util.IpUtil.ipToHostName;
 
 @Controller
-@RequestMapping(value = "/{partialPath:(?!_view)(?!_webjars)(?!favicon\\.ico)(?!robots\\.txt)(?!sitemap.xml).+}/**")
+@RequestMapping(value = "/{partialPath:(?!_view)(?!_webjars)(?!favicon\\.ico).+}/**")
 @CrossOrigin
-class LogPathController {
+class LoggedPathController {
 
-    private static final Logger log = LoggerFactory.getLogger(LogPathController.class);
+    private static final Logger log = LoggerFactory.getLogger(LoggedPathController.class);
 
     private static final String VALID_LOGGED_PATH_REGEX = "^/(?!_)[\\p{IsAlphabetic}\\p{IsDigit}\\p{Punct} ]{2,128}$";
     private static final Pattern VALID_LOGGED_PATH = Pattern.compile(VALID_LOGGED_PATH_REGEX);
@@ -42,6 +43,10 @@ class LogPathController {
 
     @Autowired
     private RequestRepository requestRepository;
+
+
+    @Value("${production.host:xss.to}")
+    private String productionHost;
 
     @Value("${behindReverseProxy:false}")
     private boolean behindReverseProxy;
@@ -59,14 +64,20 @@ class LogPathController {
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseStatus(value = HttpStatus.OK)
-    public ResponseEntity loggedRequestNonJsonBody(HttpServletRequest request) {
+    public ResponseEntity logRequestNonJsonBody(HttpServletRequest request) {
 
         RequestEntity requestEntity = requestRepository.save(buildBaseRequestEntity(request));
 
         ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.OK).cacheControl(DO_NOT_CACHE);
 
-        if (requestEntity.getPath().toLowerCase().endsWith(".png")) {
+        String path = requestEntity.getPath().toLowerCase();
+
+        if (path.endsWith(".png")) {
             return response.contentType(MediaType.IMAGE_PNG).body(ONE_PIXEL_PNG);
+        } else if (path.equals("/robots.txt")) {
+            return createRobotsDotTextResponse(request);
+        } else if (path.equals("/sitemap.xml")) {
+            return createSiteMapDotXmlResponse();
         } else {
             return response.contentType(MediaType.TEXT_PLAIN).body("logged");
         }
@@ -76,7 +87,7 @@ class LogPathController {
     @RequestMapping(method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseStatus(value = HttpStatus.OK)
-    public ResponseEntity loggedRequestJsonBody(HttpServletRequest request, @RequestBody Map<String, Object> jsonBody) {
+    public ResponseEntity logRequestWithJsonBody(HttpServletRequest request, @RequestBody Map<String, Object> jsonBody) {
 
         RequestEntity requestEntity = buildBaseRequestEntity(request);
 
@@ -91,6 +102,36 @@ class LogPathController {
         ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.OK).cacheControl(DO_NOT_CACHE);
 
         return response.contentType(MediaType.APPLICATION_JSON_UTF8).body("{\"logged\": true}");
+    }
+
+
+    /*
+     * Creates a robots.txt that denies all paths if our server is not the production server.
+     */
+    private ResponseEntity<String> createRobotsDotTextResponse(HttpServletRequest request) {
+
+        boolean allowRobotCrawl = false;
+        String requestHost = request.getHeader("Host");
+
+        if (requestHost != null) {
+            requestHost = requestHost.replaceFirst(":.*", "").toLowerCase(); // strip port numbers
+            allowRobotCrawl = requestHost.equals(productionHost);
+        }
+
+        log.debug("RobotsController called, reqHost={} canCrawl={}", requestHost, allowRobotCrawl);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                "User-agent: *\n" +
+                        "Disallow: " + (allowRobotCrawl ? "_view/\n" : "/\n")
+        );
+    }
+
+    /*
+     *  I should create a sitemap.xml eventually.  For now we return a 404 response to let the
+     *  (logged) requesting robot know that we don't have one.
+     */
+    private ResponseEntity<String> createSiteMapDotXmlResponse() {
+        ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.NOT_FOUND);
+        return response.contentType(MediaType.TEXT_PLAIN).body("404 - NOT FOUND (logged)");
     }
 
 
