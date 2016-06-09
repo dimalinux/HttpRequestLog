@@ -46,7 +46,7 @@ public class UserViewController {
                 "Content-Security-Policy",
                 "default-src 'self'; style-src 'self' 'unsafe-inline';"
         );
-        return "_view/index.html";
+        return "/_view/index.html";
     }
 
     @RequestMapping(
