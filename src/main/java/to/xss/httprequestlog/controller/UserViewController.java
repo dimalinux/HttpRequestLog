@@ -42,6 +42,8 @@ public class UserViewController {
     public String showLandingPage(HttpServletResponse response) {
         log.info("homepage request made");
         response.addHeader("X-Frame-Options", "deny");
+        response.addHeader("X-Content-Type-Options", "nosniff");
+        response.addHeader("X-XSS-Protection", "1; mode=block");
         response.addHeader(
                 "Content-Security-Policy",
                 "default-src 'self'; style-src 'self' 'unsafe-inline';"
